@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MP3Play</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Exo+2:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080c0a;--bg2:#0e1410;--bg3:#141d16;--bg4:#1a2520;
+  --text:#e8f0eb;--text2:#6a8872;--text3:#344a3a;
+  --orange:#F26F23;--orange-dim:rgba(242,111,35,0.12);--orange-glow:rgba(242,111,35,0.3);
+  --green:#2EE88A;--green-dim:rgba(46,232,138,0.1);--green-glow:rgba(46,232,138,0.3);
+  --blue:#4DAFFF;--blue-dim:rgba(77,175,255,0.1);--blue-glow:rgba(77,175,255,0.3);
+  --border:rgba(46,232,138,0.07);--border2:rgba(46,232,138,0.14);
+  --r:14px;--rs:10px;
+  --font-head:'Rajdhani',sans-serif;
+  --font-body:'Exo 2',sans-serif;
+  --font-mono:'Space Mono',monospace;
+}
+
+html,body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── SPLASH ── */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity .7s ease,transform .7s ease;
+}
+#splash.hidden{opacity:0;transform:scale(1.03);pointer-events:none}
+
+.splash-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(46,232,138,0.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(46,232,138,0.035) 1px,transparent 1px);
+  background-size:44px 44px;
+  animation:gridPan 12s linear infinite;
+}
+@keyframes gridPan{0%{background-position:0 0}100%{background-position:44px 44px}}
+
+.splash-orbs{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0;animation:orbIn 1.4s ease forwards}
+.orb1{width:500px;height:500px;background:var(--green);top:-180px;left:-150px;animation-delay:.2s}
+.orb2{width:400px;height:400px;background:var(--blue);bottom:-150px;right:-120px;animation-delay:.45s}
+.orb3{width:280px;height:280px;background:var(--green);bottom:20%;left:30%;animation-delay:.7s}
+@keyframes orbIn{to{opacity:.07}}
+
+.splash-content{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:18px;
+  animation:contentRise .9s cubic-bezier(.16,1,.3,1) .15s both;
+}
+@keyframes contentRise{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+.splash-icon{
+  width:90px;height:90px;border-radius:24px;
+  background:linear-gradient(135deg,#0f2419,#1a3d28);
+  display:flex;align-items:center;justify-content:center;
+  border:1px solid rgba(46,232,138,0.25);
+  box-shadow:0 0 40px var(--green-glow),0 0 80px rgba(46,232,138,0.1),inset 0 1px 0 rgba(46,232,138,0.15);
+  animation:iconFloat 3s ease-in-out infinite;
+}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+.splash-icon svg{width:46px;height:46px}
+
+.splash-wordmark{
+  font-family:var(--font-head);font-size:48px;font-weight:700;
+  letter-spacing:8px;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--green) 0%,var(--blue) 60%,var(--green) 100%);
+  background-size:200% 100%;
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  animation:shimmer 3s linear infinite;
+  filter:drop-shadow(0 0 24px rgba(46,232,138,0.35));
+}
+@keyframes shimmer{0%{background-position:0% 50%}100%{background-position:200% 50%}}
+
+.splash-sub{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:4px;
+  color:var(--text3);text-transform:uppercase;
+  animation:contentRise .9s cubic-bezier(.16,1,.3,1) .4s both;
+}
+
+.splash-eq{
+  display:flex;align-items:flex-end;gap:5px;height:36px;
+  animation:contentRise .9s cubic-bezier(.16,1,.3,1) .55s both;
+}
+.seq{width:4px;border-radius:3px}
+.seq:nth-child(1){background:var(--green);height:45%;animation:seqA .9s ease infinite}
+.seq:nth-child(2){background:var(--green);height:90%;animation:seqA .9s ease .12s infinite}
+.seq:nth-child(3){background:var(--blue);height:60%;animation:seqA .9s ease .24s infinite}
+.seq:nth-child(4){background:var(--blue);height:100%;animation:seqA .9s ease .08s infinite}
+.seq:nth-child(5){background:var(--green);height:40%;animation:seqA .9s ease .35s infinite}
+.seq:nth-child(6){background:var(--blue);height:75%;animation:seqA .9s ease .18s infinite}
+.seq:nth-child(7){background:var(--green);height:55%;animation:seqA .9s ease .28s infinite}
+@keyframes seqA{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.2)}}
+
+.splash-track{
+  width:220px;
+  animation:contentRise .9s cubic-bezier(.16,1,.3,1) .65s both;
+}
+.splash-track-bg{height:2px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.splash-track-fill{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--blue));border-radius:2px}
+
+/* ── APP ── */
+.app{max-width:700px;margin:0 auto;padding:1.8rem 1.2rem 7.5rem;opacity:0;transition:opacity .6s ease .1s}
+.app.visible{opacity:1}
+
+/* Scanline subtle */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.03) 2px,rgba(0,0,0,0.03) 4px);
+}
+
+/* Header */
+.header{display:flex;align-items:center;gap:12px;margin-bottom:4px;position:relative;z-index:2}
+.logo-box{
+  width:42px;height:42px;border-radius:11px;
+  background:linear-gradient(135deg,#0f2419,#1a3d28);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  border:1px solid rgba(46,232,138,0.2);
+  box-shadow:0 0 20px rgba(46,232,138,0.15);
+}
+.logo-text{
+  font-family:var(--font-head);font-size:24px;font-weight:700;letter-spacing:4px;text-transform:uppercase;
+  background:linear-gradient(90deg,var(--green),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.sub{font-size:10px;color:var(--text3);margin-bottom:1.5rem;font-family:var(--font-mono);letter-spacing:1.5px;position:relative;z-index:2}
+
+/* Search */
+.search-row{display:flex;gap:8px;margin-bottom:1rem;position:relative;z-index:2}
+.sw{flex:1;position:relative}
+.sw i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:15px;pointer-events:none}
+input#q{
+  width:100%;height:44px;padding:0 14px 0 40px;
+  border-radius:var(--rs);border:1px solid var(--border);
+  background:var(--bg2);color:var(--text);font-size:14px;font-family:var(--font-body);
+  transition:border-color .25s,box-shadow .25s,background .25s;
+}
+input#q:focus{outline:none;border-color:rgba(46,232,138,0.4);background:var(--bg3);box-shadow:0 0 0 3px rgba(46,232,138,0.08)}
+input#q::placeholder{color:var(--text3)}
+
+.btn{
+  height:44px;padding:0 18px;border-radius:var(--rs);border:1px solid rgba(46,232,138,0.3);
+  background:linear-gradient(135deg,rgba(46,232,138,0.12),rgba(77,175,255,0.08));
+  color:var(--green);font-size:12px;font-weight:700;font-family:var(--font-head);
+  letter-spacing:2px;text-transform:uppercase;
+  cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:all .25s;white-space:nowrap;
+  box-shadow:0 0 16px rgba(46,232,138,0.08);
+}
+.btn:hover{background:linear-gradient(135deg,rgba(46,232,138,0.22),rgba(77,175,255,0.14));border-color:rgba(46,232,138,0.5);box-shadow:0 0 24px rgba(46,232,138,0.2);transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+/* Status */
+#status{font-size:10px;color:var(--text3);min-height:16px;margin-bottom:.8rem;font-family:var(--font-mono);letter-spacing:.5px;position:relative;z-index:2}
+#status.err{color:#ff6b6b}
+#status.ok{color:var(--green)}
+
+/* Debug */
+.debug{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:11px;margin-bottom:1rem;display:none;position:relative;z-index:2}
+.debug summary{font-size:11px;cursor:pointer;color:var(--text3);font-family:var(--font-mono)}
+.debug pre{font-size:10px;color:var(--text3);margin-top:8px;overflow:auto;max-height:160px;white-space:pre-wrap;word-break:break-all}
+
+/* Results */
+.results{display:flex;flex-direction:column;gap:5px;position:relative;z-index:2}
+
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:10px 13px;
+  display:flex;align-items:center;gap:11px;cursor:pointer;
+  transition:border-color .25s,background .25s,transform .2s,box-shadow .25s;
+  position:relative;overflow:hidden;
+  opacity:0;animation:cardIn .4s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes cardIn{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
+.card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--green),var(--blue));opacity:0;transition:opacity .25s;border-radius:2px 0 0 2px}
+.card:hover{background:var(--bg3);border-color:var(--border2);transform:translateX(3px)}
+.card:hover::before{opacity:1}
+.card.active{border-color:rgba(46,232,138,0.3);background:var(--bg3);transform:translateX(3px);box-shadow:0 0 20px rgba(46,232,138,0.06)}
+.card.active::before{opacity:1}
+
+.card-num{width:20px;text-align:center;font-size:11px;color:var(--text3);font-family:var(--font-mono);flex-shrink:0;transition:opacity .2s}
+.card.active .card-num{opacity:0;width:0;overflow:hidden;min-width:0}
+.eq-bars{display:none;align-items:flex-end;gap:2px;height:16px;flex-shrink:0}
+.card.active .eq-bars{display:flex}
+.eq-b{width:3px;border-radius:2px;animation:eq .7s ease infinite}
+.eq-b:nth-child(1){background:var(--green);height:40%;animation-delay:0s}
+.eq-b:nth-child(2){background:var(--green);height:100%;animation-delay:.14s}
+.eq-b:nth-child(3){background:var(--blue);height:65%;animation-delay:.28s}
+.eq-b:nth-child(4){background:var(--blue);height:80%;animation-delay:.09s}
+@keyframes eq{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.2)}}
+
+.thumb{width:46px;height:46px;border-radius:8px;overflow:hidden;flex-shrink:0;background:var(--bg4);display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:18px;border:1px solid var(--border)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.info{flex:1;min-width:0}
+.ttl{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.art{font-size:11px;color:var(--text2);margin-top:1px;font-family:var(--font-mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:flex;gap:7px;margin-top:4px;flex-wrap:wrap;align-items:center}
+.mi{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:2px;font-family:var(--font-mono)}
+.mi i{font-size:10px}
+.badge-audio{font-size:9px;padding:2px 7px;border-radius:20px;background:var(--green-dim);color:var(--green);font-weight:700;font-family:var(--font-mono);letter-spacing:.5px;border:1px solid rgba(46,232,138,0.18)}
+
+.acts{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.bpl{width:34px;height:34px;border-radius:50%;border:1px solid var(--border2);background:var(--bg3);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:13px;transition:all .2s}
+.bpl:hover{background:rgba(46,232,138,0.15);border-color:rgba(46,232,138,0.4);color:var(--green);transform:scale(1.1)}
+.card.active .bpl{background:rgba(46,232,138,0.15);border-color:rgba(46,232,138,0.4);color:var(--green)}
+.bext{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:12px;text-decoration:none;transition:color .2s,border-color .2s}
+.bext:hover{color:var(--blue);border-color:rgba(77,175,255,0.4)}
+
+/* Player Bar */
+.pbar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(8,12,10,0.97);
+  backdrop-filter:blur(24px) saturate(1.8);
+  border-top:1px solid var(--border);
+  padding:0 1.2rem;
+  display:none;flex-direction:column;z-index:100;
+}
+.pbar.on{display:flex}
+.pbar::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),var(--blue),var(--green),transparent)}
+
+.pbar-top{display:flex;align-items:center;gap:11px;padding:10px 0 5px}
+.pwave{display:flex;align-items:flex-end;gap:2px;height:20px;flex-shrink:0}
+.pw{width:3px;border-radius:2px;animation:pwA .9s ease infinite}
+.pw:nth-child(1){background:var(--green);height:50%;animation-delay:0s}
+.pw:nth-child(2){background:var(--green);height:100%;animation-delay:.1s}
+.pw:nth-child(3){background:var(--blue);height:65%;animation-delay:.2s}
+.pw:nth-child(4){background:var(--blue);height:38%;animation-delay:.3s}
+.pw:nth-child(5){background:var(--green);height:82%;animation-delay:.15s}
+@keyframes pwA{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.18)}}
+.pwave.paused .pw{animation:none;transform:scaleY(.35);opacity:.4}
+
+.pinfo{flex:1;min-width:0}
+.ptitle{font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.partist{font-size:10px;color:var(--text2);font-family:var(--font-mono);margin-top:1px}
+.pctrl{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.pbtn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border2);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:13px;transition:all .2s}
+.pbtn:hover{background:var(--bg3);transform:scale(1.08)}
+.pbtn.playing-icon{background:rgba(46,232,138,0.15);color:var(--green);border-color:rgba(46,232,138,0.4);box-shadow:0 0 12px rgba(46,232,138,0.2)}
+.bext2{width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);font-size:12px;text-decoration:none;transition:color .2s,border-color .2s}
+.bext2:hover{color:var(--blue);border-color:rgba(77,175,255,0.4)}
+
+audio{width:100%;height:32px;margin-bottom:7px;accent-color:var(--green)}
+.audio-wrap{padding-bottom:5px}
+.no-audio{font-size:11px;color:var(--text3);padding:4px 0 8px;text-align:center;font-family:var(--font-mono)}
+
+.empty{padding:4rem 1rem;text-align:center}
+.empty i{font-size:36px;color:var(--text3);display:block;margin-bottom:10px;opacity:.35}
+.empty p{font-size:11px;font-family:var(--font-mono);color:var(--text3)}
+
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spin{animation:spin .7s linear infinite;display:inline-block}
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-grid"></div>
+  <div class="splash-orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="splash-content">
+    <div class="splash-icon">
+      <svg width="46" height="46" viewBox="0 0 46 46" fill="none">
+        <path d="M5 26q0-5.5 4-9.5A12 12 0 0 1 16 13a16 16 0 0 1 14.5-10A16 16 0 0 1 46 19v11H6A1 1 0 0 1 5 29V26z" fill="url(#gIcon)" opacity=".9"/>
+        <rect x="34" y="18" width="4" height="12" rx="2" fill="url(#gIcon)" opacity=".5"/>
+        <rect x="40" y="16" width="4" height="14" rx="2" fill="url(#gIcon)" opacity=".35"/>
+        <defs>
+          <linearGradient id="gIcon" x1="0" y1="0" x2="46" y2="46" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#2EE88A"/>
+            <stop offset="100%" stop-color="#4DAFFF"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <div class="splash-wordmark">MP3PLAY</div>
+    <div class="splash-sub">stream music anywhere</div>
+    <div class="splash-eq">
+      <div class="seq"></div><div class="seq"></div><div class="seq"></div>
+      <div class="seq"></div><div class="seq"></div><div class="seq"></div>
+      <div class="seq"></div>
+    </div>
+    <div class="splash-track">
+      <div class="splash-track-bg">
+        <div class="splash-track-fill" id="splashFill"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="header">
+    <div class="logo-box">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M2 13q0-2.5 1.75-4.25A6 6 0 0 1 7 7.5a7.5 7.5 0 0 1 7-5A7.5 7.5 0 0 1 21 10v5H2.8A.8.8 0 0 1 2 14.2V13z" fill="url(#gLogo)"/>
+        <rect x="16.5" y="9.5" width="1.4" height="5.5" rx=".7" fill="url(#gLogo)" opacity=".55"/>
+        <rect x="19.5" y="8.5" width="1.4" height="6.5" rx=".7" fill="url(#gLogo)" opacity=".35"/>
+        <defs>
+          <linearGradient id="gLogo" x1="0" y1="0" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#2EE88A"/>
+            <stop offset="100%" stop-color="#4DAFFF"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+    <span class="logo-text">MP3PLAY</span>
+  </div>
+  <p class="sub">// search &amp; stream music from soundcloud</p>
+
+  <div class="search-row">
+    <div class="sw">
+      <i class="ti ti-search"></i>
+      <input type="text" id="q" placeholder="Cari lagu, artis..."/>
+    </div>
+    <button class="btn" id="btnSearch" onclick="doSearch()">
+      <i class="ti ti-search"></i> CARI
+    </button>
+  </div>
+
+  <details class="debug" id="debugBox">
+    <summary>🔍 Debug: Raw API Response</summary>
+    <pre id="debugPre"></pre>
+  </details>
+
+  <div id="status"></div>
+  <div id="results" class="results">
+    <div class="empty"><i class="ti ti-music"></i><p>// ketik pencarian lalu tekan CARI</p></div>
+  </div>
+</div>
+
+<!-- Player -->
+<div class="pbar" id="pbar">
+  <div class="pbar-top">
+    <div class="pwave" id="pwave">
+      <div class="pw"></div><div class="pw"></div><div class="pw"></div>
+      <div class="pw"></div><div class="pw"></div>
+    </div>
+    <div class="pinfo">
+      <div class="ptitle" id="ptitle">—</div>
+      <div class="partist" id="partist">—</div>
+    </div>
+    <div class="pctrl">
+      <button class="pbtn" onclick="prevTrack()"><i class="ti ti-player-skip-back"></i></button>
+      <button class="pbtn" id="btnPlay" onclick="togglePlay()"><i class="ti ti-player-play"></i></button>
+      <button class="pbtn" onclick="nextTrack()"><i class="ti ti-player-skip-forward"></i></button>
+      <a id="plink" href="#" target="_blank" class="bext2"><i class="ti ti-external-link"></i></a>
+    </div>
+  </div>
+  <div class="audio-wrap" id="audioWrap">
+    <audio id="player" controls preload="none"></audio>
+  </div>
+</div>
+
+<script>
+let tracks=[],curIdx=null;
+const API_KEY='zelapi-4hwd4va';
+const BASE='https://zelapioffciall.dpdns.org/tools/soundcloud';
+
+// Smooth splash
+(function(){
+  const fill=document.getElementById('splashFill');
+  const splash=document.getElementById('splash');
+  const app=document.getElementById('app');
+  const dur=2600,start=Date.now();
+  let raf;
+  function step(){
+    const elapsed=Date.now()-start;
+    const raw=Math.min(1,elapsed/dur);
+    // ease-in-out
+    const p=raw<0.5?2*raw*raw:1-Math.pow(-2*raw+2,2)/2;
+    fill.style.width=(p*100)+'%';
+    if(raw<1){raf=requestAnimationFrame(step)}
+    else{
+      setTimeout(()=>{
+        splash.classList.add('hidden');
+        app.classList.add('visible');
+        setTimeout(()=>splash.style.display='none',800);
+      },200);
+    }
+  }
+  raf=requestAnimationFrame(step);
+})();
+
+const pbar=document.getElementById('pbar'),pwave=document.getElementById('pwave'),
+  ptitle=document.getElementById('ptitle'),partist=document.getElementById('partist'),
+  plink=document.getElementById('plink'),btnPlay=document.getElementById('btnPlay'),
+  audioWrap=document.getElementById('audioWrap');
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function fmtN(n){if(!n||isNaN(n))return null;return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(0)+'K':String(n)}
+function fmtD(ms){if(!ms)return null;const s=Math.floor(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function getAudioUrl(t){
+  const c=[t.stream_url,t.download_url,t.audio_url,t.streamUrl,t.downloadUrl,t.media?.transcodings?.[0]?.url,t.media?.transcodings?.[1]?.url];
+  for(const u of c)if(u&&typeof u==='string'&&u.startsWith('http'))return u;
+  return null;
+}
+
+async function doSearch(){
+  const q=document.getElementById('q').value.trim();
+  if(!q)return;
+  const btn=document.getElementById('btnSearch'),statusEl=document.getElementById('status'),results=document.getElementById('results');
+  btn.disabled=true;btn.innerHTML='<i class="ti ti-loader spin"></i> LOADING';
+  statusEl.textContent='';statusEl.className='';
+  results.innerHTML='<div class="empty"><i class="ti ti-loader spin" style="font-size:30px"></i><p>// memuat data...</p></div>';
+  try{
+    const res=await fetch(`${BASE}?q=${encodeURIComponent(q)}&apikey=${API_KEY}`);
+    if(!res.ok)throw new Error(`HTTP ${res.status}`);
+    const data=await res.json();
+    document.getElementById('debugBox').style.display='block';
+    document.getElementById('debugPre').textContent=JSON.stringify(data,null,2).slice(0,4000);
+    tracks=data.result||data.data||data.tracks||data.collection||(Array.isArray(data)?data:[]);
+    if(!tracks.length){results.innerHTML=`<div class="empty"><i class="ti ti-mood-sad"></i><p>// tidak ada hasil untuk "${esc(q)}"</p></div>`;return}
+    statusEl.textContent=`// ${tracks.length} hasil ditemukan`;statusEl.className='ok';
+    renderTracks();
+  }catch(e){
+    results.innerHTML=`<div class="empty"><i class="ti ti-alert-triangle"></i><p>// error: ${esc(e.message)}</p></div>`;
+    statusEl.className='err';statusEl.textContent='// error: '+e.message;
+  }finally{btn.disabled=false;btn.innerHTML='<i class="ti ti-search"></i> CARI'}
+}
+
+function renderTracks(){
+  const results=document.getElementById('results');results.innerHTML='';
+  tracks.forEach((t,i)=>{
+    const title=t.title||t.name||'Unknown',artist=t.user?.username||t.artist||'—';
+    const thumb=(t.artwork_url||t.thumbnail||t.image||'').replace('-large','-t300x300');
+    const dur=fmtD(t.duration),plays=fmtN(t.playback_count),likes=fmtN(t.likes_count||t.favoritings_count);
+    const link=t.permalink_url||t.url||'#',hasAudio=!!getAudioUrl(t);
+    const card=document.createElement('div');
+    card.className='card';card.style.animationDelay=(i*.05)+'s';
+    card.innerHTML=`
+      <div class="card-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="eq-bars"><div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div><div class="eq-b"></div></div>
+      <div class="thumb">${thumb?`<img src="${esc(thumb)}" onerror="this.parentNode.innerHTML='<i class=\\'ti ti-music\\'></i>'" loading="lazy"/>`:'<i class="ti ti-music"></i>'}</div>
+      <div class="info">
+        <div class="ttl">${esc(title)}</div>
+        <div class="art">${esc(artist)}</div>
+        <div class="meta">
+          ${dur?`<span class="mi"><i class="ti ti-clock"></i>${dur}</span>`:''}
+          ${plays?`<span class="mi"><i class="ti ti-player-play"></i>${plays}</span>`:''}
+          ${likes?`<span class="mi"><i class="ti ti-heart"></i>${likes}</span>`:''}
+          ${hasAudio?'<span class="badge-audio">▶ STREAM</span>':''}
+        </div>
+      </div>
+      <div class="acts">
+        <button class="bpl" onclick="selectTrack(${i});event.stopPropagation()"><i class="ti ti-player-play"></i></button>
+        <a href="${esc(link)}" target="_blank" class="bext" onclick="event.stopPropagation()"><i class="ti ti-external-link"></i></a>
+      </div>`;
+    card.addEventListener('click',()=>selectTrack(i));
+    results.appendChild(card);
+  });
+}
+
+function selectTrack(idx){
+  document.querySelectorAll('.card').forEach(c=>c.classList.remove('active'));
+  curIdx=idx;const t=tracks[idx];
+  document.querySelectorAll('.card')[idx]?.classList.add('active');
+  ptitle.textContent=t.title||t.name||'—';
+  partist.textContent=t.user?.username||t.artist||'—';
+  plink.href=t.permalink_url||t.url||'#';
+  pbar.classList.add('on');pwave.classList.remove('paused');
+  const audioUrl=getAudioUrl(t);
+  if(audioUrl){
+    audioWrap.innerHTML=`<audio id="player" controls style="width:100%;margin-bottom:7px;accent-color:var(--green)" src="${esc(audioUrl)}" preload="metadata"></audio>`;
+    const a=document.getElementById('player');
+    a.play().catch(()=>{});
+    btnPlay.innerHTML='<i class="ti ti-player-pause"></i>';btnPlay.classList.add('playing-icon');
+    a.addEventListener('pause',()=>{pwave.classList.add('paused');btnPlay.innerHTML='<i class="ti ti-player-play"></i>';btnPlay.classList.remove('playing-icon')});
+    a.addEventListener('play',()=>{pwave.classList.remove('paused');btnPlay.innerHTML='<i class="ti ti-player-pause"></i>';btnPlay.classList.add('playing-icon')});
+    a.addEventListener('ended',()=>nextTrack());
+  }else{
+    const scId=t.id,link=t.permalink_url||t.url||'#';
+    audioWrap.innerHTML=scId
+      ?`<iframe scrolling="no" frameborder="no" allow="autoplay" style="width:100%;height:80px;margin-bottom:7px;border-radius:8px" src="https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${scId}&color=%232EE88A&auto_play=true&hide_related=true&show_comments=false&show_user=true&show_reposts=false&show_teaser=false&visual=false"></iframe>`
+      :`<div class="no-audio">// tidak ada stream — <a href="${esc(link)}" target="_blank" style="color:var(--green)">buka di SoundCloud</a></div>`;
+    btnPlay.innerHTML='<i class="ti ti-player-pause"></i>';btnPlay.classList.add('playing-icon');
+  }
+}
+
+function togglePlay(){const a=document.getElementById('player');if(!a||a.tagName!=='AUDIO')return;a.paused?a.play():a.pause()}
+function prevTrack(){if(curIdx!==null&&curIdx>0)selectTrack(curIdx-1)}
+function nextTrack(){if(curIdx!==null&&curIdx<tracks.length-1)selectTrack(curIdx+1)}
+
+document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch()});
+</script>
+</body>
+</html>
